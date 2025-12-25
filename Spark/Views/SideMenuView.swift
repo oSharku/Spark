@@ -14,6 +14,10 @@ struct SideMenuView: View {
     @Binding var isDarkMode: Bool
     @Binding var showRewardsPage: Bool
     @Binding var showProfilePage: Bool
+    @Binding var showSettingsPage: Bool
+    @Binding var showNotificationsPage: Bool
+    @Binding var showHelpSupportPage: Bool
+    @Binding var showAboutPage: Bool
     @StateObject private var appState = AppState.shared
     @Environment(\.colorScheme) var colorScheme
     
@@ -46,7 +50,7 @@ struct SideMenuView: View {
                                     subtitle: "View and edit your profile",
                                     color: .blue
                                 ) {
-                                    // Navigate to profile
+                                    showProfilePage = true; isPresented = false
                                 }
                                 
                                 MenuItem(
@@ -71,7 +75,7 @@ struct SideMenuView: View {
                                     subtitle: "Manage alerts",
                                     color: .red
                                 ) {
-                                    // Navigate to notifications settings
+                                    showNotificationsPage = true; isPresented = false
                                 }
                                 
                                 MenuItem(
@@ -92,7 +96,7 @@ struct SideMenuView: View {
                                     subtitle: "App preferences",
                                     color: .gray
                                 ) {
-                                    // Navigate to settings
+                                    showSettingsPage = true; isPresented = false
                                 }
                                 
                                 MenuItem(
@@ -101,7 +105,7 @@ struct SideMenuView: View {
                                     subtitle: "Get assistance",
                                     color: .green
                                 ) {
-                                    // Navigate to help
+                                    showHelpSupportPage = true; isPresented = false
                                 }
                                 
                                 MenuItem(
@@ -110,7 +114,7 @@ struct SideMenuView: View {
                                     subtitle: "Version 1.0.0",
                                     color: .cyan
                                 ) {
-                                    // Navigate to about
+                                    showAboutPage = true; isPresented = false
                                 }
                             }
                             
@@ -406,5 +410,14 @@ struct LogoutButton: View {
 
 // MARK: - Preview
 #Preview {
-    SideMenuView(isPresented: .constant(true), isDarkMode: .constant(false), showRewardsPage: .constant(false), showProfilePage: .constant(false))
+    SideMenuView(
+        isPresented: .constant(true),
+        isDarkMode: .constant(false),
+        showRewardsPage: .constant(false),
+        showProfilePage: .constant(false),
+        showSettingsPage: .constant(false),
+        showNotificationsPage: .constant(false),
+        showHelpSupportPage: .constant(false),
+        showAboutPage: .constant(false)
+    )
 }

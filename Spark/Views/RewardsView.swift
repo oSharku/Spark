@@ -700,6 +700,8 @@ struct RewardShopCard: View {
                         )
                 }
                 .disabled(!canAfford)
+                .buttonStyle(.plain)
+                .disabled(!canAfford)
             }
         }
         .padding(14)

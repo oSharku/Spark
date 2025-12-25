@@ -16,27 +16,30 @@ struct ChatsView: View {
     @Environment(\.colorScheme) var colorScheme
     
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 20) {
-                // Header
-                ChatsHeaderView()
-                
-                // Search Bar
-                ChatsSearchBar(searchText: $searchText)
-                
-                // Segment Filter
-                ChatsSegmentFilter(selectedSegment: $selectedSegment)
-                
-                // Online Now Section
-                ChatsOnlineNowSection()
-                
-                // Chat List
-                ChatsListSection()
-                
-                // Spacer for tab bar
-                Color.clear.frame(height: 100)
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 20) {
+                    // Header
+                    ChatsHeaderView()
+                    
+                    // Search Bar
+                    ChatsSearchBar(searchText: $searchText)
+                    
+                    // Segment Filter
+                    ChatsSegmentFilter(selectedSegment: $selectedSegment)
+                    
+                    // Online Now Section
+                    ChatsOnlineNowSection()
+                    
+                    // Chat List
+                    ChatsListSection(searchText: searchText, selectedSegment: selectedSegment)
+                    
+                    // Spacer for tab bar
+                    Color.clear.frame(height: 100)
+                }
+                .padding(.horizontal, 20)
             }
-            .padding(.horizontal, 20)
+            .navigationBarHidden(true)
         }
     }
 }
@@ -226,84 +229,95 @@ struct ChatsOnlineUserAvatar: View {
 
 // MARK: - Chats List Section
 struct ChatsListSection: View {
+    let searchText: String
+    let selectedSegment: ChatSegment
     @Environment(\.colorScheme) var colorScheme
+    
+    // Sample chat data with filtering properties
+    private let allChats: [(name: String, message: String, time: String, unreadCount: Int, isOnline: Bool, isLecturer: Bool, avatarColor: Color, isGroup: Bool, isAnnouncement: Bool, role: String)] = [
+        ("Prof. Emmet", "Thank you for submitting your project!", "10:30 AM", 2, true, true, .green, false, false, "Lecturer"),
+        ("HCI Study Group", "Sarah: Anyone has the notes for chapter 5?", "9:15 AM", 5, false, false, .purple, true, false, "Group Chat"),
+        ("Dr. Parker", "The lab will be rescheduled to Friday", "Yesterday", 0, false, true, .green, false, false, "Lecturer"),
+        ("Web Dev Project Team", "You: I'll push the changes tonight", "Yesterday", 0, false, false, .orange, true, false, "Project Group"),
+        ("Class Rep - CSC 3104", "Reminder: Assignment due on Friday!", "Mon", 0, false, false, .red, false, true, "Announcement"),
+        ("Dr. Smith", "Your database ER diagram looks good", "Mon", 1, true, true, .green, false, false, "Lecturer")
+    ]
+    
+    private var filteredChats: [(name: String, message: String, time: String, unreadCount: Int, isOnline: Bool, isLecturer: Bool, avatarColor: Color, isGroup: Bool, isAnnouncement: Bool, role: String)] {
+        var chats = allChats
+        
+        // Apply segment filter
+        switch selectedSegment {
+        case .all:
+            break // Show all
+        case .lecturers:
+            chats = chats.filter { $0.isLecturer }
+        case .groups:
+            chats = chats.filter { $0.isGroup }
+        case .announcements:
+            chats = chats.filter { $0.isAnnouncement }
+        }
+        
+        // Apply search filter
+        if !searchText.isEmpty {
+            chats = chats.filter {
+                $0.name.localizedCaseInsensitiveContains(searchText) ||
+                $0.message.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+        
+        return chats
+    }
     
     var body: some View {
         VStack(spacing: 0) {
-            ChatsListItem(
-                name: "Prof. Emmet",
-                message: "Thank you for submitting your project!",
-                time: "10:30 AM",
-                unreadCount: 2,
-                isOnline: true,
-                isLecturer: true,
-                avatarColor: .green
-            )
-            
-            ChatsDivider()
-            
-            ChatsListItem(
-                name: "HCI Study Group",
-                message: "Sarah: Anyone has the notes for chapter 5?",
-                time: "9:15 AM",
-                unreadCount: 5,
-                isOnline: false,
-                isLecturer: false,
-                avatarColor: .purple,
-                isGroup: true
-            )
-            
-            ChatsDivider()
-            
-            ChatsListItem(
-                name: "Dr. Parker",
-                message: "The lab will be rescheduled to Friday",
-                time: "Yesterday",
-                unreadCount: 0,
-                isOnline: false,
-                isLecturer: true,
-                avatarColor: .green
-            )
-            
-            ChatsDivider()
-            
-            ChatsListItem(
-                name: "Web Dev Project Team",
-                message: "You: I'll push the changes tonight",
-                time: "Yesterday",
-                unreadCount: 0,
-                isOnline: false,
-                isLecturer: false,
-                avatarColor: .orange,
-                isGroup: true
-            )
-            
-            ChatsDivider()
-            
-            ChatsListItem(
-                name: "Class Rep - CSC 3104",
-                message: "Reminder: Assignment due on Friday!",
-                time: "Mon",
-                unreadCount: 0,
-                isOnline: false,
-                isLecturer: false,
-                avatarColor: .red,
-                isAnnouncement: true
-            )
-            
-            ChatsDivider()
-            
-            ChatsListItem(
-                name: "Dr. Smith",
-                message: "Your database ER diagram looks good",
-                time: "Mon",
-                unreadCount: 1,
-                isOnline: true,
-                isLecturer: true,
-                avatarColor: .green
-            )
+            if filteredChats.isEmpty {
+                // Empty State
+                VStack(spacing: 16) {
+                    Image(systemName: "bubble.left.and.bubble.right.fill")
+                        .font(.system(size: 50))
+                        .foregroundStyle(.gray.opacity(0.4))
+                    
+                    Text("No conversations found")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                    
+                    Text(searchText.isEmpty ? "Try a different filter" : "Try a different search")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.tertiary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 60)
+                .background(RoundedRectangle(cornerRadius: 20).fill(.ultraThinMaterial))
+            } else {
+                ForEach(Array(filteredChats.enumerated()), id: \.offset) { index, chat in
+                    NavigationLink(destination: ChatDetailView(
+                        contactName: chat.name,
+                        contactRole: chat.role,
+                        isLecturer: chat.isLecturer,
+                        isOnline: chat.isOnline
+                    )) {
+                        ChatsListItem(
+                            name: chat.name,
+                            message: chat.message,
+                            time: chat.time,
+                            unreadCount: chat.unreadCount,
+                            isOnline: chat.isOnline,
+                            isLecturer: chat.isLecturer,
+                            avatarColor: chat.avatarColor,
+                            isGroup: chat.isGroup,
+                            isAnnouncement: chat.isAnnouncement
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    
+                    if index < filteredChats.count - 1 {
+                        ChatsDivider()
+                    }
+                }
+                .background(RoundedRectangle(cornerRadius: 20).fill(.ultraThinMaterial))
+            }
         }
-        .background(RoundedRectangle(cornerRadius: 20).fill(.ultraThinMaterial))
     }
 }
 
@@ -438,17 +452,7 @@ struct ChatsListItem: View {
             RoundedRectangle(cornerRadius: 16)
                 .fill(unreadCount > 0 ? Color.blue.opacity(colorScheme == .dark ? 0.1 : 0.03) : Color.clear)
         )
-        .scaleEffect(isPressed ? 0.98 : 1.0)
-        .onTapGesture {
-            withAnimation(.spring(response: 0.2)) {
-                isPressed = true
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                withAnimation(.spring(response: 0.2)) {
-                    isPressed = false
-                }
-            }
-        }
+        .contentShape(Rectangle())
     }
 }
 

@@ -5,6 +5,10 @@ struct ContentView: View {
     @State private var showSideMenu = false
     @State private var showRewardsPage = false
     @State private var showProfilePage = false
+    @State private var showSettingsPage = false
+    @State private var showNotificationsPage = false
+    @State private var showHelpSupportPage = false
+    @State private var showAboutPage = false
     @AppStorage("isDarkMode") private var isDarkMode = false
     @StateObject private var appState = AppState.shared
     
@@ -18,6 +22,18 @@ struct ContentView: View {
                         .transition(.move(edge: .trailing))
                 } else if showRewardsPage {
                     RewardsView(isPresented: $showRewardsPage)
+                        .transition(.move(edge: .trailing))
+                } else if showSettingsPage {
+                    SettingsView(isPresented: $showSettingsPage)
+                        .transition(.move(edge: .trailing))
+                } else if showNotificationsPage {
+                    NotificationsManagerView(isPresented: $showNotificationsPage)
+                        .transition(.move(edge: .trailing))
+                } else if showHelpSupportPage {
+                    HelpSupportView(isPresented: $showHelpSupportPage)
+                        .transition(.move(edge: .trailing))
+                } else if showAboutPage {
+                    AboutView(isPresented: $showAboutPage)
                         .transition(.move(edge: .trailing))
                 } else {
                     TabView(selection: $selectedTab) {
@@ -36,13 +52,26 @@ struct ContentView: View {
                     
                     VStack {
                         Spacer()
-                        SparkTabBar(selectedTab: $selectedTab, unreadCount: appState.unreadAnnouncementCount)
+                        SparkTabBar(selectedTab: $selectedTab, unreadCount: appState.unreadNotificationCount)
                     }
-                    SideMenuView(isPresented: $showSideMenu, isDarkMode: $isDarkMode, showRewardsPage: $showRewardsPage, showProfilePage: $showProfilePage)
+                    SideMenuView(
+                        isPresented: $showSideMenu,
+                        isDarkMode: $isDarkMode,
+                        showRewardsPage: $showRewardsPage,
+                        showProfilePage: $showProfilePage,
+                        showSettingsPage: $showSettingsPage,
+                        showNotificationsPage: $showNotificationsPage,
+                        showHelpSupportPage: $showHelpSupportPage,
+                        showAboutPage: $showAboutPage
+                    )
                 }
             }
             .animation(.easeInOut(duration: 0.3), value: showRewardsPage)
             .animation(.easeInOut(duration: 0.3), value: showProfilePage)
+            .animation(.easeInOut(duration: 0.3), value: showSettingsPage)
+            .animation(.easeInOut(duration: 0.3), value: showNotificationsPage)
+            .animation(.easeInOut(duration: 0.3), value: showHelpSupportPage)
+            .animation(.easeInOut(duration: 0.3), value: showAboutPage)
             .preferredColorScheme(isDarkMode ? .dark : .light)
             .ignoresSafeArea(.keyboard)
             .navigationBarHidden(true)
