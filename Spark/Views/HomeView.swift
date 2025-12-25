@@ -555,9 +555,11 @@ struct HomeAssignmentsSection: View {
                 
                 Spacer()
                 
-                Button("View all") {}
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(.blue)
+                NavigationLink(destination: AssignmentsView()) {
+                    Text("View all")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(.blue)
+                }
             }
             
             if assignments.isEmpty {
@@ -569,7 +571,10 @@ struct HomeAssignmentsSection: View {
             } else {
                 VStack(spacing: 10) {
                     ForEach(assignments) { assignment in
-                        HomeAssignmentRow(assignment: assignment)
+                        NavigationLink(destination: AssignmentDetailView(assignment: assignment)) {
+                            HomeAssignmentRow(assignment: assignment)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }

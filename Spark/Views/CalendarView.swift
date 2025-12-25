@@ -339,37 +339,85 @@ struct TodayScheduleSection: View {
             
             // Schedule Items
             VStack(spacing: 12) {
-                ScheduleItem(
+                NavigationLink(destination: EventDetailView(event: CalendarEventModel(
                     title: "HCI Lecture",
-                    time: "10:00 AM - 12:00 PM",
+                    description: "Introduction to Human-Computer Interaction principles",
+                    date: selectedDate,
+                    startTime: Calendar.current.date(bySettingHour: 10, minute: 0, second: 0, of: selectedDate) ?? selectedDate,
+                    endTime: Calendar.current.date(bySettingHour: 12, minute: 0, second: 0, of: selectedDate) ?? selectedDate,
                     location: "Room 301",
                     type: .lecture,
-                    color: .purple
-                )
+                    colorHex: "9B59B6"
+                ))) {
+                    ScheduleItem(
+                        title: "HCI Lecture",
+                        time: "10:00 AM - 12:00 PM",
+                        location: "Room 301",
+                        type: .lecture,
+                        color: .purple
+                    )
+                }
+                .buttonStyle(.plain)
                 
-                ScheduleItem(
+                NavigationLink(destination: EventDetailView(event: CalendarEventModel(
                     title: "AR App Project Due",
-                    time: "11:59 PM",
+                    description: "Submit your completed AR application project",
+                    date: selectedDate,
+                    startTime: Calendar.current.date(bySettingHour: 23, minute: 59, second: 0, of: selectedDate) ?? selectedDate,
+                    endTime: Calendar.current.date(bySettingHour: 23, minute: 59, second: 0, of: selectedDate) ?? selectedDate,
                     location: "Online Submission",
                     type: .assignment,
-                    color: .blue
-                )
+                    colorHex: "4A90E2"
+                ))) {
+                    ScheduleItem(
+                        title: "AR App Project Due",
+                        time: "11:59 PM",
+                        location: "Online Submission",
+                        type: .assignment,
+                        color: .blue
+                    )
+                }
+                .buttonStyle(.plain)
                 
-                ScheduleItem(
+                NavigationLink(destination: EventDetailView(event: CalendarEventModel(
                     title: "Web Dev Lab",
-                    time: "2:00 PM - 4:00 PM",
+                    description: "Hands-on practice with React components",
+                    date: selectedDate,
+                    startTime: Calendar.current.date(bySettingHour: 14, minute: 0, second: 0, of: selectedDate) ?? selectedDate,
+                    endTime: Calendar.current.date(bySettingHour: 16, minute: 0, second: 0, of: selectedDate) ?? selectedDate,
                     location: "Computer Lab A",
                     type: .lab,
-                    color: .orange
-                )
+                    colorHex: "E67E22"
+                ))) {
+                    ScheduleItem(
+                        title: "Web Dev Lab",
+                        time: "2:00 PM - 4:00 PM",
+                        location: "Computer Lab A",
+                        type: .lab,
+                        color: .orange
+                    )
+                }
+                .buttonStyle(.plain)
                 
-                ScheduleItem(
+                NavigationLink(destination: EventDetailView(event: CalendarEventModel(
                     title: "Study Group Meeting",
-                    time: "5:00 PM - 6:00 PM",
+                    description: "Group study session for upcoming database exam",
+                    date: selectedDate,
+                    startTime: Calendar.current.date(bySettingHour: 17, minute: 0, second: 0, of: selectedDate) ?? selectedDate,
+                    endTime: Calendar.current.date(bySettingHour: 18, minute: 0, second: 0, of: selectedDate) ?? selectedDate,
                     location: "Library",
                     type: .meeting,
-                    color: .green
-                )
+                    colorHex: "27AE60"
+                ))) {
+                    ScheduleItem(
+                        title: "Study Group Meeting",
+                        time: "5:00 PM - 6:00 PM",
+                        location: "Library",
+                        type: .meeting,
+                        color: .green
+                    )
+                }
+                .buttonStyle(.plain)
             }
         }
         .padding(20)

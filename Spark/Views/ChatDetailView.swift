@@ -1,0 +1,429 @@
+//
+//  ChatDetailView.swift
+//  Spark
+//
+//  Detailed chat conversation view for one-on-one and group chats
+//
+
+import SwiftUI
+
+// MARK: - Chat Message Model
+struct ChatMessage: Identifiable, Equatable {
+    let id = UUID()
+    let text: String
+    let isCurrentUser: Bool
+    let timestamp: Date
+    let senderName: String?
+    
+    static var sampleMessages: [ChatMessage] {
+        [
+            ChatMessage(
+                text: "Hi Prof. Emmet! I wanted to ask about the AR project requirements.",
+                isCurrentUser: true,
+                timestamp: Date().addingTimeInterval(-3600),
+                senderName: nil
+            ),
+            ChatMessage(
+                text: "Hello John! Of course, what would you like to know?",
+                isCurrentUser: false,
+                timestamp: Date().addingTimeInterval(-3540),
+                senderName: "Prof. Emmet"
+            ),
+            ChatMessage(
+                text: "I'm wondering about the scope of the final deliverable. Should we include a presentation deck as well?",
+                isCurrentUser: true,
+                timestamp: Date().addingTimeInterval(-3480),
+                senderName: nil
+            ),
+            ChatMessage(
+                text: "Great question! Yes, you'll need a 10-15 slide presentation along with the working prototype. Focus on your design process and user testing results.",
+                isCurrentUser: false,
+                timestamp: Date().addingTimeInterval(-3420),
+                senderName: "Prof. Emmet"
+            ),
+            ChatMessage(
+                text: "The technical documentation is still required too, correct?",
+                isCurrentUser: true,
+                timestamp: Date().addingTimeInterval(-3360),
+                senderName: nil
+            ),
+            ChatMessage(
+                text: "Absolutely. Include system architecture, API documentation, and a brief user manual. Check the project brief on the portal for the complete checklist.",
+                isCurrentUser: false,
+                timestamp: Date().addingTimeInterval(-3300),
+                senderName: "Prof. Emmet"
+            ),
+            ChatMessage(
+                text: "Perfect, that's very helpful! One more thing - is there flexibility on the AR framework we use?",
+                isCurrentUser: true,
+                timestamp: Date().addingTimeInterval(-3240),
+                senderName: nil
+            ),
+            ChatMessage(
+                text: "Yes, you can use ARKit, ARCore, or any cross-platform solution like Unity with AR Foundation. Just make sure to justify your choice in the technical report.",
+                isCurrentUser: false,
+                timestamp: Date().addingTimeInterval(-3180),
+                senderName: "Prof. Emmet"
+            ),
+            ChatMessage(
+                text: "Awesome, thank you so much for clarifying! I'll review the project brief again.",
+                isCurrentUser: true,
+                timestamp: Date().addingTimeInterval(-3120),
+                senderName: nil
+            ),
+            ChatMessage(
+                text: "You're welcome! Don't hesitate to reach out if you have more questions. Good luck with the project! 🚀",
+                isCurrentUser: false,
+                timestamp: Date().addingTimeInterval(-3060),
+                senderName: "Prof. Emmet"
+            ),
+            ChatMessage(
+                text: "Thank you for submitting your project!",
+                isCurrentUser: false,
+                timestamp: Date().addingTimeInterval(-1800),
+                senderName: "Prof. Emmet"
+            )
+        ]
+    }
+}
+
+// MARK: - Chat Detail View
+struct ChatDetailView: View {
+    
+    // MARK: - Properties
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.colorScheme) var colorScheme
+    
+    let contactName: String
+    let contactRole: String
+    let isLecturer: Bool
+    let isOnline: Bool
+    
+    @State private var messages: [ChatMessage] = ChatMessage.sampleMessages
+    @State private var messageText: String = ""
+    @State private var isTyping: Bool = false
+    @FocusState private var isInputFocused: Bool
+    
+    // MARK: - Body
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                // Background
+                backgroundGradient
+                    .ignoresSafeArea()
+                
+                VStack(spacing: 0) {
+                    // Custom Header
+                    chatHeader
+                    
+                    // Messages List
+                    ScrollViewReader { proxy in
+                        ScrollView(showsIndicators: false) {
+                            VStack(spacing: 16) {
+                                // Date Header
+                                Text("Today")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundStyle(.secondary)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(
+                                        Capsule()
+                                            .fill(.ultraThinMaterial)
+                                    )
+                                    .padding(.top, 16)
+                                
+                                // Messages
+                                ForEach(messages) { message in
+                                    MessageBubble(message: message, isLecturer: isLecturer)
+                                        .id(message.id)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 16)
+                        }
+                        .onChange(of: messages.count) { _, _ in
+                            if let lastMessage = messages.last {
+                                withAnimation(.easeOut(duration: 0.3)) {
+                                    proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                                }
+                            }
+                        }
+                        .onAppear {
+                            if let lastMessage = messages.last {
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                    proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Input Bar
+                    chatInputBar
+                }
+            }
+            .navigationBarHidden(true)
+        }
+    }
+    
+    // MARK: - Background Gradient
+    private var backgroundGradient: some View {
+        Group {
+            if colorScheme == .dark {
+                LinearGradient(
+                    colors: [
+                        Color(hex: "1C1C1E"),
+                        Color(hex: "2C2C2E"),
+                        Color(hex: "1C1C1E")
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            } else {
+                LinearGradient(
+                    colors: [
+                        Color(hex: "E8F4FD"),
+                        Color(hex: "B8D4E8"),
+                        Color(hex: "7EB8DA")
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            }
+        }
+    }
+    
+    // MARK: - Chat Header
+    private var chatHeader: some View {
+        HStack(spacing: 14) {
+            // Back Button
+            Button(action: {
+                dismiss()
+            }) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(colorScheme == .dark ? .white : .primary)
+            }
+            
+            // Avatar
+            ZStack(alignment: .bottomTrailing) {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: isLecturer ? [.green.opacity(0.6), .teal.opacity(0.6)] : [.blue.opacity(0.6), .purple.opacity(0.6)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 44, height: 44)
+                    .overlay(
+                        Text(String(contactName.prefix(1)))
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(.white)
+                    )
+                
+                // Online Indicator
+                if isOnline {
+                    Circle()
+                        .fill(.green)
+                        .frame(width: 12, height: 12)
+                        .overlay(
+                            Circle()
+                                .stroke(.white, lineWidth: 2)
+                        )
+                }
+            }
+            
+            // Name & Role
+            VStack(alignment: .leading, spacing: 2) {
+                Text(contactName)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(colorScheme == .dark ? .white : .primary)
+                
+                HStack(spacing: 4) {
+                    Text(contactRole)
+                        .font(.system(size: 12))
+                        .foregroundStyle(isLecturer ? .green : .blue)
+                    
+                    if isOnline {
+                        Text("• Online")
+                            .font(.system(size: 12))
+                            .foregroundStyle(.green)
+                    }
+                }
+            }
+            
+            Spacer()
+            
+            // More Menu
+            Menu {
+                Button(action: {}) {
+                    Label("View Profile", systemImage: "person.circle")
+                }
+                Button(action: {}) {
+                    Label("Search Messages", systemImage: "magnifyingglass")
+                }
+                Button(action: {}) {
+                    Label("Mute Notifications", systemImage: "bell.slash")
+                }
+            } label: {
+                Image(systemName: "ellipsis.circle")
+                    .font(.system(size: 20))
+                    .foregroundStyle(colorScheme == .dark ? .white : .primary)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(
+            .ultraThinMaterial
+        )
+    }
+    
+    // MARK: - Chat Input Bar
+    private var chatInputBar: some View {
+        VStack(spacing: 0) {
+            Divider()
+                .background(Color.gray.opacity(0.2))
+            
+            HStack(spacing: 12) {
+                // Plus Button (Attachments)
+                Button(action: {
+                    // Handle attachment
+                }) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(.blue)
+                }
+                
+                // Text Input
+                HStack(spacing: 8) {
+                    TextField("Message...", text: $messageText, axis: .vertical)
+                        .font(.system(size: 15))
+                        .focused($isInputFocused)
+                        .lineLimit(1...5)
+                        .onChange(of: messageText) { _, newValue in
+                            isTyping = !newValue.isEmpty
+                        }
+                    
+                    if !messageText.isEmpty {
+                        Button(action: {
+                            messageText = ""
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 18))
+                                .foregroundStyle(.gray.opacity(0.5))
+                        }
+                    }
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(colorScheme == .dark ? Color.white.opacity(0.1) : Color.gray.opacity(0.1))
+                )
+                
+                // Send Button
+                Button(action: sendMessage) {
+                    Image(systemName: messageText.isEmpty ? "mic.fill" : "arrow.up.circle.fill")
+                        .font(.system(size: 28))
+                        .foregroundStyle(messageText.isEmpty ? .blue : .blue)
+                        .scaleEffect(messageText.isEmpty ? 1.0 : 1.1)
+                        .animation(.spring(response: 0.3), value: messageText.isEmpty)
+                }
+                .disabled(messageText.isEmpty)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(
+                .ultraThinMaterial
+            )
+        }
+    }
+    
+    // MARK: - Actions
+    private func sendMessage() {
+        guard !messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        
+        let newMessage = ChatMessage(
+            text: messageText,
+            isCurrentUser: true,
+            timestamp: Date(),
+            senderName: nil
+        )
+        
+        withAnimation(.spring(response: 0.3)) {
+            messages.append(newMessage)
+            messageText = ""
+        }
+        
+        // Simulate response after a delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            let response = ChatMessage(
+                text: "Thanks for your message! I'll get back to you shortly.",
+                isCurrentUser: false,
+                timestamp: Date(),
+                senderName: contactName
+            )
+            withAnimation(.spring(response: 0.3)) {
+                messages.append(response)
+            }
+        }
+    }
+}
+
+// MARK: - Message Bubble
+struct MessageBubble: View {
+    let message: ChatMessage
+    let isLecturer: Bool
+    @Environment(\.colorScheme) var colorScheme
+    
+    private var timeString: String {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: message.timestamp)
+    }
+    
+    var body: some View {
+        HStack(alignment: .bottom, spacing: 8) {
+            if message.isCurrentUser {
+                Spacer(minLength: 60)
+            }
+            
+            VStack(alignment: message.isCurrentUser ? .trailing : .leading, spacing: 4) {
+                // Message Bubble
+                Text(message.text)
+                    .font(.system(size: 15))
+                    .foregroundStyle(message.isCurrentUser ? .white : (colorScheme == .dark ? .white : .primary))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(message.isCurrentUser ? 
+                                  LinearGradient(colors: [.blue, .blue.opacity(0.8)], startPoint: .topLeading, endPoint: .bottomTrailing) :
+                                  LinearGradient(colors: [colorScheme == .dark ? Color.white.opacity(0.15) : Color.gray.opacity(0.2), 
+                                                         colorScheme == .dark ? Color.white.opacity(0.1) : Color.gray.opacity(0.15)], 
+                                                startPoint: .topLeading, endPoint: .bottomTrailing)
+                            )
+                    )
+                
+                // Timestamp
+                Text(timeString)
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
+            
+            if !message.isCurrentUser {
+                Spacer(minLength: 60)
+            }
+        }
+    }
+}
+
+// MARK: - Preview
+#Preview {
+    ChatDetailView(
+        contactName: "Prof. Emmet",
+        contactRole: "Lecturer",
+        isLecturer: true,
+        isOnline: true
+    )
+}

@@ -24,6 +24,13 @@ class AppState: ObservableObject {
     @Published var announcements: [Announcement] = []
     @Published var unreadAnnouncementCount: Int = 0
     
+    // MARK: - Notifications (Updates Page)
+    @Published var notifications: [NotifItem] = NotifItem.sampleData
+    
+    var unreadNotificationCount: Int {
+        notifications.filter { !$0.isRead }.count
+    }
+    
     // MARK: - Assignments
     @Published var assignments: [Assignment] = []
     @Published var pendingAssignmentCount: Int = 0
