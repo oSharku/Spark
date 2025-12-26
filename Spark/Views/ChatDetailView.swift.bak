@@ -99,7 +99,7 @@ struct ChatDetailView: View {
     let isLecturer: Bool
     let isOnline: Bool
     
-    @State private var messages: [ChatMessage] = []
+    @State private var messages: [ChatMessage] = ChatMessage.sampleMessages
     @State private var messageText: String = ""
     @State private var isTyping: Bool = false
     @FocusState private var isInputFocused: Bool
@@ -149,6 +149,9 @@ struct ChatDetailView: View {
                             }
                         }
                         .onAppear {
+                            // Load messages for specific contact
+                            messages = appState.getMessages(for: contactName)
+                            
                             if let lastMessage = messages.last {
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                                     proxy.scrollTo(lastMessage.id, anchor: .bottom)
